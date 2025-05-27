@@ -1,8 +1,12 @@
+import { useNavigate } from "react-router-dom";
+
 function formatDate(dateStr) {
   return `${dateStr.slice(5, 7)}/${dateStr.slice(8, 10)}/${dateStr.slice(0, 4)}`;
 }
 
 function BackTestResults({ data }) {
+  const navigate = useNavigate();
+
   if (!data) return null;
   const {
     ticker = "",
@@ -110,6 +114,12 @@ function BackTestResults({ data }) {
           </div>
         )}
       </div>
+      <button
+        onClick={() => navigate("/")}
+        className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded mb-4"
+      >
+        ← Back to Form
+      </button>
     </div>
   );
 }
