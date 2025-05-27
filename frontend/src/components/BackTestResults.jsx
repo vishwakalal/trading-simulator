@@ -1,3 +1,7 @@
+function formatDate(dateStr) {
+  return `${dateStr.slice(5, 7)}/${dateStr.slice(8, 10)}/${dateStr.slice(0, 4)}`;
+}
+
 function BackTestResults({ data }) {
   if (!data) return null;
   const {
@@ -10,12 +14,12 @@ function BackTestResults({ data }) {
     preview = [],
   } = data;
   return (
-    <div className="mt-8 p-6 bg-white rounded shadow-md w-full max-w-4xl space-y-6">
+    <div className="mt-8 p-6 bg-white rounded shadow-md w-full max-w-7xl mx-auto space-y-6">
       <div>
         <h2 className="text-2xl font-semibold mb-1">Backtest Results</h2>
         <p className="text-gray-600">
           {strategy.toUpperCase()} Strategy on <strong>{ticker}</strong> from{" "}
-          {start_date} to {end_date}
+          {formatDate(start_date)} to {formatDate(end_date)}
         </p>
       </div>
 
@@ -42,26 +46,69 @@ function BackTestResults({ data }) {
       {/*signals */}
       <div>
         <h3 className="text-lg font-medium mb-2">Trade Signals</h3>
-        <ul className="text-sm space-y-1">
-          {signals.length === 0 ? (
-            <p>No signals generated.</p>
-          ) : (
-            signals.map((s, i) => (
-              <li key={i}>
-                {s.type.toUpperCase()} on <strong>{s.date}</strong> at $
-                {s.price.toFixed(2)}
-              </li>
-            ))
-          )}
-        </ul>
+        {signals.length === 0 ? (
+          <p className="text-sm text-gray-500">No signals generated.</p>
+        ) : (
+          <div className="max-h-64 overflow-y-auto border rounded">
+            <table className="w-full text-sm text-left border-collapse">
+              <thead className="bg-gray-100 sticky top-0 z-10">
+                <tr>
+                  <th className="p-2 border-b">Type</th>
+                  <th className="p-2 border-b">Date</th>
+                  <th className="p-2 border-b">Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                {signals.map((s, i) => (
+                  <tr key={i} className="border-t">
+                    <td className="p-2 font-semibold text-blue-700">
+                      {s.type.toUpperCase()}
+                    </td>
+                    <td className="p-2">{s.date}</td>
+                    <td className="p-2">${s.price.toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/*preview*/}
       <div>
         <h3 className="text-lg font-medium mb-2">Sample of Input Data</h3>
-        <pre className="bg-gray-100 p-2 text-xs rounded overflow-x-auto">
-          {JSON.stringify(preview.slice(0, 5), null, 2)}
-        </pre>
+        {preview.length === 0 ? (
+          <p className="text-sm text-gray-500">No preview data available.</p>
+        ) : (
+          <div className="overflow-x-auto border rounded">
+            <table className="min-w-full text-sm text-left border-collapse">
+              <thead className="bg-gray-100 sticky top-0">
+                <tr>
+                  {Object.keys(preview[0]).map((col) => (
+                    <th key={col} className="p-2 border-b capitalize">
+                      {col.replace(/_/g, " ")}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {preview.slice(0, 5).map((row, i) => (
+                  <tr key={i} className="border-t">
+                    {Object.values(row).map((val, j) => (
+                      <td key={j} className="p-2">
+                        {!isNaN(val) && typeof val === "number"
+                          ? val.toFixed(2)
+                          : !isNaN(Number(val)) && val !== ""
+                            ? Number(val).toFixed(2)
+                            : val}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

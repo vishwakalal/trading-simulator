@@ -58,6 +58,8 @@ def run_backtest(inputs: Inputs):
 
         response = {
             "ticker": inputs.ticker,
+            "start_date": inputs.start_date,
+            "end_date": inputs.end_date,
             "row_count": len(df),
             "columns": preview_df.columns.tolist(),
             "preview": preview_records,
