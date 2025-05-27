@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from models.strategy import Inputs
 from fastapi import APIRouter
+from fastapi import HTTPException
 from services.data import get_stock_data
 from strategies.sma import sma_strategy
 from strategies.ema import ema_strategy
@@ -30,6 +31,9 @@ def read_root():
 def run_backtest(inputs: Inputs):
     try:
         df = get_stock_data(inputs.ticker, inputs.start_date, inputs.end_date)
+        if df is None or df.empty:
+            raise HTTPException(status_code=400, detail="Invalid ticker or no data available.")
+
 
         # Flatten MultiIndex columns if needed
         if isinstance(df.columns[0], tuple):

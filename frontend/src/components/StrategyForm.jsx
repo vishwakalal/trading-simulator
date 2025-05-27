@@ -8,9 +8,31 @@ function StrategyForm({ onSubmit }) {
   const [fast, setFast] = useState("");
   const [slow, setSlow] = useState("");
   const [period, setPeriod] = useState("");
+  const [errors, setErrors] = useState({});
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    const newErrors = {};
+    if (!ticker.trim()) {
+      newErrors.ticker = "Valid ticker is required";
+    }
+    if (!startDate || !endDate) {
+      newErrors.date = "Valid date range is required";
+    } else if (startDate > endDate) {
+      newErrors.date = "Start date must be before end date";
+    }
+    if (strategy != "rsi") {
+      if (!fast || !slow) {
+        newErrors.speed = "Fast and slow values are required";
+      } else if (Number(fast) > Number(slow)) {
+        newErrors.speed = "Slow must be greater than fast";
+      }
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    setErrors({});
     const inputs = {
       ticker: ticker,
       strategy: strategy,
@@ -20,7 +42,14 @@ function StrategyForm({ onSubmit }) {
       slow: slow != "" ? Number(slow) : null,
       period: period !== "" ? Number(period) : null,
     };
-    onSubmit(inputs);
+    try {
+      await onSubmit(inputs);
+    } catch (err) {
+      setErrors((prev) => ({
+        ...prev,
+        ticker: err.message || "Invalid ticker",
+      }));
+    }
   };
 
   return (
@@ -37,6 +66,9 @@ function StrategyForm({ onSubmit }) {
           onChange={(e) => setTicker(e.target.value)}
           className="border p-2 w-full"
         />
+        {errors.ticker && (
+          <p className="text-red-500 text-sm mt-1">{errors.ticker}</p>
+        )}
       </div>
       {/*drop down for strats */}
       <div>
@@ -53,47 +85,57 @@ function StrategyForm({ onSubmit }) {
       </div>
 
       {/*date entry */}
-      <div className="flex gap-4">
-        <div className="flex-1">
-          <label className="block font-medium">Start Date</label>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="border p-2 w-full"
-          />
+      <div className="w-full">
+        <div className="flex gap-4">
+          <div className="flex-1">
+            <label className="block font-medium">Start Date</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="border p-2 w-full"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="block font-medium">End Date</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="border p-2 w-full"
+            />
+          </div>
         </div>
-        <div className="flex-1">
-          <label className="block font-medium">End Date</label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="border p-2 w-full"
-          />
-        </div>
+        {errors.date && (
+          <p className="text-red-500 text-sm mt-1 text-center">{errors.date}</p>
+        )}
       </div>
 
       {/*fast/slow entry */}
-      <div className="flex gap-4">
-        <div className="flex-1">
-          <label className="block font-medium">Fast</label>
-          <input
-            type="number"
-            value={fast}
-            onChange={(e) => setFast(Number(e.target.value))}
-            className="border p-2 w-full"
-          />
+      <div className="w-full">
+        <div className="flex gap-4">
+          <div className="flex-1">
+            <label className="block font-medium">Fast</label>
+            <input
+              type="number"
+              value={fast}
+              onChange={(e) => setFast(Number(e.target.value))}
+              className="border p-2 w-full"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="block font-medium">Slow</label>
+            <input
+              type="number"
+              value={slow}
+              onChange={(e) => setSlow(Number(e.target.value))}
+              className="border p-2 w-full"
+            />
+          </div>
         </div>
-        <div className="flex-1">
-          <label className="block font-medium">Slow</label>
-          <input
-            type="number"
-            value={slow}
-            onChange={(e) => setSlow(Number(e.target.value))}
-            className="border p-2 w-full"
-          />
-        </div>
+        {errors.speed && (
+          <p className="text-red-500 text-sm mt-1">{errors.speed}</p>
+        )}
       </div>
 
       {/*period shows up only if rsi is selected*/}

@@ -17,7 +17,11 @@ function App() {
       setResults(response.data);
       navigate("/results");
     } catch (err) {
-      console.error("Backtest request failed:", err);
+      if (err.response?.status === 400) {
+        throw new Error(err.response.data.detail);
+      } else {
+        console.error("Backtest request failed:", err);
+      }
     }
   };
   return (
