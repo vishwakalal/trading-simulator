@@ -42,6 +42,8 @@ def run_backtest(inputs: Inputs):
 
         preview_df = df.head(5).reset_index()
         preview_records = preview_df.astype(str).to_dict(orient="records")
+        full_records = df.astype(str).to_dict(orient="records")
+
 
         print("Preview Columns:", preview_df.columns.tolist())
         print("Preview Records:", preview_records)
@@ -53,9 +55,9 @@ def run_backtest(inputs: Inputs):
                     df = df.rename(columns={col: "Close"})
                     break
             if inputs.strategy == "sma":
-                signals = sma_strategy(df, inputs.fast, inputs.slow)
+                signals, sma_series = sma_strategy(df, inputs.fast, inputs.slow)
             if inputs.strategy == "ema":
-                signals = ema_strategy(df, inputs.fast, inputs.slow)
+                signals, ema_series = ema_strategy(df, inputs.fast, inputs.slow)
             if inputs.strategy == "rsi":
                 signals = rsi_strategy(df)
             metrics = get_metrics(signals, df)
@@ -67,8 +69,10 @@ def run_backtest(inputs: Inputs):
             "row_count": len(df),
             "columns": preview_df.columns.tolist(),
             "preview": preview_records,
+            "price_data": full_records,
             "signals": signals,
             "metrics": metrics,
+            "indicator_series": sma_series or ema_series
         }
 
         return response

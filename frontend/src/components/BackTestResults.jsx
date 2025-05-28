@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import CandleChart from "./CandleChart";
 
 function formatDate(dateStr) {
   return `${dateStr.slice(5, 7)}/${dateStr.slice(8, 10)}/${dateStr.slice(0, 4)}`;
@@ -16,21 +17,35 @@ function BackTestResults({ data }) {
     metrics = {},
     signals = [],
     preview = [],
+    price_data = [],
   } = data;
   return (
     <div className="mt-8 p-6 bg-white rounded shadow-md w-full max-w-7xl mx-auto space-y-6">
       <div>
         <h2 className="text-2xl font-semibold mb-1">Backtest Results</h2>
         <p className="text-gray-600">
-          {strategy.toUpperCase()} Strategy on <strong>{ticker}</strong> from{" "}
-          {formatDate(start_date)} to {formatDate(end_date)}
+          {strategy.toUpperCase()} Strategy on{" "}
+          <strong>{ticker.toUpperCase()}</strong> from {formatDate(start_date)}{" "}
+          to {formatDate(end_date)}
         </p>
+      </div>
+
+      <div className="mt-8">
+        <h3 className="text-lg font-medium mb-2">Candlestick Chart</h3>
+        <div className="bg-white border rounded p-4 shadow">
+          <CandleChart
+            data={price_data}
+            ticker={ticker}
+            signals={signals}
+            indicators={data.indicator_series}
+          />
+        </div>
       </div>
 
       {/*metrics */}
       <div>
         <h3 className="text-lg font-medium mb-2">Performance Metrics</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {Object.entries(metrics).map(([key, value]) => (
             <div
               key={key}
