@@ -1,13 +1,15 @@
 import { createChart } from "lightweight-charts";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function CandleChart({ data, ticker, signals, indicators = [] }) {
   const chartContainerRef = useRef();
+  const [showFast, setShowFast] = useState(true);
+  const [showSlow, setShowSlow] = useState(true);
+
   useEffect(() => {
     if (!data || data.length === 0) {
       return;
     }
-    console.log("✅ indicators (raw):", indicators);
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
       height: 400,
@@ -25,6 +27,9 @@ function CandleChart({ data, ticker, signals, indicators = [] }) {
       },
     });
     const candleSeries = chart.addCandlestickSeries();
+
+    let fastLine = null;
+    let slowLine = null;
 
     const formattedData = data.map((row) => {
       const [year, month, day] = row.Date.split("-").map(Number);
@@ -85,32 +90,61 @@ function CandleChart({ data, ticker, signals, indicators = [] }) {
           return { time: { year, month, day }, value: item.slow };
         });
 
-      console.log("📈 fastData sample:", fastData.slice(0, 5));
-      console.log("📉 slowData sample:", slowData.slice(0, 5));
+      if (showFast && fastData.length > 0) {
+        fastLine = chart.addLineSeries({
+          color: "#0000ff",
+          lineWidth: 2,
+          overlay: true,
+          priceScaleId: "right",
+        });
+        fastLine.setData(fastData);
+      }
 
-      if (fastData.length > 0)
-        chart
-          .addLineSeries({
-            color: "#0000ff",
-            lineWidth: 2,
-            overlay: true,
-            priceScaleId: "right",
-          })
-          .setData(fastData);
-
-      if (slowData.length > 0)
-        chart
-          .addLineSeries({
-            color: "#ffa500",
-            lineWidth: 2,
-            overlay: true,
-            priceScaleId: "right",
-          })
-          .setData(slowData);
+      if (showSlow && slowData.length > 0) {
+        slowLine = chart.addLineSeries({
+          color: "#ffa500",
+          lineWidth: 2,
+          overlay: true,
+          priceScaleId: "right",
+        });
+        slowLine.setData(slowData);
+      }
     }
 
     return () => chart.remove();
-  }, [data, ticker, signals, indicators]);
-  return <div ref={chartContainerRef} className="w-full" />;
+  }, [data, ticker, signals, indicators, showFast, showSlow]);
+  return (
+    <div className="w-full space-y-2">
+      <div className="flex gap-4 mb-2">
+        <label className="flex items-center gap-3">
+          <span className="text-sm text-gray-700">Show Fast</span>
+          <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+            <input
+              type="checkbox"
+              checked={showFast}
+              onChange={() => setShowFast(!showFast)}
+              className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+            />
+            <span className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300"></span>
+          </div>
+        </label>
+
+        <label className="flex items-center gap-3">
+          <span className="text-sm text-gray-700">Show Slow</span>
+          <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+            <input
+              type="checkbox"
+              checked={showSlow}
+              onChange={() => setShowSlow(!showSlow)}
+              className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+            />
+            <span className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300"></span>
+          </div>
+        </label>
+      </div>
+
+      <div ref={chartContainerRef} className="w-full" />
+    </div>
+  );
 }
 export default CandleChart;
