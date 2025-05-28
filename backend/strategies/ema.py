@@ -44,4 +44,13 @@ def ema_strategy(
                     }
                 )
 
-    return signals
+    indicator_series = [
+            {
+                "date": str(df.loc[i, "Date"]),
+                "fast": df.loc[i, "EMA_fast"],
+                "slow": df.loc[i, "EMA_slow"]
+            }
+            for i in range(len(df))
+            if pd.notna(df.loc[i, "EMA_fast"]) and pd.notna(df.loc[i, "EMA_slow"])
+        ]
+    return signals, indicator_series

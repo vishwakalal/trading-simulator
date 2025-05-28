@@ -42,5 +42,13 @@ def sma_strategy(
                         "price": float(df.loc[i, "Close"]),
                     }
                 )
+    indicator_series = [{
+        "date": str(df.loc[i,"Date"]),
+        "fast": df.loc[i,"SMA_fast"],
+        "slow": df.loc[i,"SMA_slow"]
+        }
+        for i in range (len(df))
+        if pd.notna(df.loc[i, "SMA_fast"]) and pd.notna(df.loc[i, "SMA_slow"])
+    ]
 
-    return signals
+    return signals, indicator_series

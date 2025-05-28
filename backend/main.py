@@ -49,17 +49,19 @@ def run_backtest(inputs: Inputs):
         print("Preview Records:", preview_records)
         signals = []
         metrics = {}
+        indicator_series = []
         if inputs.strategy in ["sma", "ema", "rsi"]:
             for col in df.columns:
                 if "Close" in col:
                     df = df.rename(columns={col: "Close"})
                     break
             if inputs.strategy == "sma":
-                signals, sma_series = sma_strategy(df, inputs.fast, inputs.slow)
+                signals, indicator_series = sma_strategy(df, inputs.fast, inputs.slow)
             if inputs.strategy == "ema":
-                signals, ema_series = ema_strategy(df, inputs.fast, inputs.slow)
+                signals, indicator_series = ema_strategy(df, inputs.fast, inputs.slow)
             if inputs.strategy == "rsi":
                 signals = rsi_strategy(df)
+                indicator_series = []
             metrics = get_metrics(signals, df)
 
         response = {
@@ -72,7 +74,7 @@ def run_backtest(inputs: Inputs):
             "price_data": full_records,
             "signals": signals,
             "metrics": metrics,
-            "indicator_series": sma_series or ema_series
+            "indicators": indicator_series,
         }
 
         return response

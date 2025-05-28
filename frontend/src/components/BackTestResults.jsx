@@ -37,7 +37,7 @@ function BackTestResults({ data }) {
             data={price_data}
             ticker={ticker}
             signals={signals}
-            indicators={data.indicator_series}
+            indicators={data.indicators}
           />
         </div>
       </div>
