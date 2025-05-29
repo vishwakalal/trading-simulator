@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
+import { supabase } from "./lib/supabaseClient";
 import "./App.css";
 import StrategyForm from "./components/StrategyForm";
 import BackTestResults from "./components/BackTestResults";
 import AuthForm from "./components/AuthForm";
-import { supabase } from "./lib/supabaseClient";
+import NavBar from "./components/NavBar";
 import axios from "axios";
 
 function App() {
@@ -38,6 +39,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-4">
+      {user && <NavBar user={user} />}
+
       <Routes>
         <Route
           path="/"
