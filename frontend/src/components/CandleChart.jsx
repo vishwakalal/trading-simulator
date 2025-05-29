@@ -133,6 +133,24 @@ function CandleChart({ data, ticker, signals, indicators = [] }) {
 
         rsiSeries.setData(rsiData);
 
+        const drawThresholdLine = (value) => {
+          const thresholdSeries = chart.addLineSeries({
+            color: "#f59e0b",
+            lineWidth: 2,
+            lineStyle: 2,
+            priceScaleId: "rsi-scale",
+          });
+          thresholdSeries.setData(
+            rsiData.map((d) => ({
+              time: d.time,
+              value,
+            }))
+          );
+        };
+
+        drawThresholdLine(70);
+        drawThresholdLine(30);
+
         chart.priceScale("rsi-scale").applyOptions({
           position: "right",
           scaleMargins: { top: 0.7, bottom: 0 },
