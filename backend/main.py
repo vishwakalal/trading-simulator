@@ -38,15 +38,13 @@ def run_backtest(inputs: Inputs):
         # Flatten MultiIndex columns if needed
         if isinstance(df.columns[0], tuple):
             df.columns = ["_".join(filter(None, map(str, col))) for col in df.columns]
-            df = df.reset_index()
+        df = df.reset_index()
 
         preview_df = df.head(5).reset_index()
         preview_records = preview_df.astype(str).to_dict(orient="records")
         full_records = df.astype(str).to_dict(orient="records")
 
 
-        print("Preview Columns:", preview_df.columns.tolist())
-        print("Preview Records:", preview_records)
         signals = []
         metrics = {}
         indicator_series = []
@@ -60,8 +58,8 @@ def run_backtest(inputs: Inputs):
             if inputs.strategy == "ema":
                 signals, indicator_series = ema_strategy(df, inputs.fast, inputs.slow)
             if inputs.strategy == "rsi":
-                signals = rsi_strategy(df)
-                indicator_series = []
+                print("▶️ Running RSI strategy with period:", inputs.period)
+                signals, indicator_series = rsi_strategy(df, inputs.period)
             metrics = get_metrics(signals, df)
 
         response = {
@@ -80,5 +78,5 @@ def run_backtest(inputs: Inputs):
         return response
 
     except Exception as e:
-        print("ERROR:", e)
+        print("ERROR:", repr(e))
         return {"error": str(e)}

@@ -26,10 +26,12 @@ def get_metrics(signals: List[Dict], df: pd.DataFrame) -> Dict:
             gain += trade
         elif trade < 0:
             loss += abs(trade)
-    if gain != 0:
+
+    if loss != 0:
         profitFactor = round(gain / loss, 2)
     else:
-        profitFactor = 0
+        profitFactor = "N/A" 
+
     trade_amount = len(trades)
     total = sum(trades)
     wins = []

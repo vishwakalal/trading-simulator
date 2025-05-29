@@ -2,7 +2,7 @@ import { useState } from "react";
 
 function StrategyForm({ onSubmit }) {
   const [ticker, setTicker] = useState("");
-  const [strategy, setStrategy] = useState("sma");
+  const [strategy, setStrategy] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [fast, setFast] = useState("");
@@ -78,6 +78,7 @@ function StrategyForm({ onSubmit }) {
           onChange={(e) => setStrategy(e.target.value)}
           className="border p-2 w-full"
         >
+          <option value="">-- Select Strategy --</option>
           <option value="sma">SMA</option>
           <option value="ema">EMA</option>
           <option value="rsi">RSI</option>
@@ -112,31 +113,33 @@ function StrategyForm({ onSubmit }) {
       </div>
 
       {/*fast/slow entry */}
-      <div className="w-full">
-        <div className="flex gap-4">
-          <div className="flex-1">
-            <label className="block font-medium">Fast</label>
-            <input
-              type="number"
-              value={fast}
-              onChange={(e) => setFast(Number(e.target.value))}
-              className="border p-2 w-full"
-            />
+      {(strategy === "sma" || strategy === "ema") && (
+        <div className="w-full">
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <label className="block font-medium">Fast</label>
+              <input
+                type="number"
+                value={fast}
+                onChange={(e) => setFast(Number(e.target.value))}
+                className="border p-2 w-full"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block font-medium">Slow</label>
+              <input
+                type="number"
+                value={slow}
+                onChange={(e) => setSlow(Number(e.target.value))}
+                className="border p-2 w-full"
+              />
+            </div>
           </div>
-          <div className="flex-1">
-            <label className="block font-medium">Slow</label>
-            <input
-              type="number"
-              value={slow}
-              onChange={(e) => setSlow(Number(e.target.value))}
-              className="border p-2 w-full"
-            />
-          </div>
+          {errors.speed && (
+            <p className="text-red-500 text-sm mt-1">{errors.speed}</p>
+          )}
         </div>
-        {errors.speed && (
-          <p className="text-red-500 text-sm mt-1">{errors.speed}</p>
-        )}
-      </div>
+      )}
 
       {/*period shows up only if rsi is selected*/}
       {strategy === "rsi" && (
@@ -155,7 +158,8 @@ function StrategyForm({ onSubmit }) {
 
       <button
         type="submit"
-        className="bg-blue-600 text-white px-4 py-2 rounded"
+        className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
+        disabled={strategy === ""}
       >
         Run
       </button>
