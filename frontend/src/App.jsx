@@ -1,12 +1,23 @@
-import { useState } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import "./App.css";
 import StrategyForm from "./components/StrategyForm";
 import BackTestResults from "./components/BackTestResults";
+import AuthForm from "./components/AuthForm";
+import { supabase } from "./lib/supabaseClient";
 import axios from "axios";
+
 function App() {
+  const [user, setUser] = useState(null);
   const [results, setResults] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data?.user || null));
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+  }, []);
 
   const handleRun = async (inputs) => {
     try {
@@ -24,11 +35,36 @@ function App() {
       }
     }
   };
+
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <Routes>
-        <Route path="/" element={<StrategyForm onSubmit={handleRun} />} />
-        <Route path="/results" element={<BackTestResults data={results} />} />
+        <Route
+          path="/"
+          element={
+            user ? (
+              <StrategyForm onSubmit={handleRun} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/results"
+          element={
+            user ? (
+              <BackTestResults data={results} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            user ? <Navigate to="/" replace /> : <AuthForm onLogin={setUser} />
+          }
+        />
       </Routes>
     </div>
   );
