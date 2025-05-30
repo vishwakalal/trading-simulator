@@ -70,8 +70,6 @@ def get_metrics(signals: List[Dict], df: pd.DataFrame) -> Dict:
                 portfolio.extend(trade_range["daily_return"].tolist())
 
             in_trade = False
-    print("Portfolio returns during trades:", portfolio)
-    print("Mean:", np.mean(portfolio), "Std:", np.std(portfolio))
 
     if portfolio and np.std(portfolio) != 0:
         sharpe = (np.mean(portfolio) / np.std(portfolio)) * np.sqrt(252)

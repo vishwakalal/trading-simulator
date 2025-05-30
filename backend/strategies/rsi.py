@@ -6,7 +6,6 @@ def rsi_strategy(df: pd.DataFrame, period: int = 14) -> (List[Dict[str, Union[st
         raise ValueError("Invalid RSI period. Must be a positive integer.")
 
     df = df.reset_index()
-    print("📊 RSI df columns:", df.columns.tolist())
 
     df["Close"] = pd.to_numeric(df["Close"], errors="coerce")
 
@@ -46,7 +45,6 @@ def rsi_strategy(df: pd.DataFrame, period: int = 14) -> (List[Dict[str, Union[st
         for _, row in df.iterrows()
     ]
 
-    print("✅ Returning RSI signals:", len(signals), "indicators:", len(indicator_series))
 
 
     return signals, indicator_series

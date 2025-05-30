@@ -6,6 +6,8 @@ import StrategyForm from "./components/StrategyForm";
 import BackTestResults from "./components/BackTestResults";
 import AuthForm from "./components/AuthForm";
 import NavBar from "./components/NavBar";
+import SavedStrategies from "./components/SavedStrategies.jsx";
+import FullStratView from "./components/FullStratView";
 import axios from "axios";
 
 function App() {
@@ -38,7 +40,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
+    <div className="min-h-screen bg-gray-900 text-white p-4">
       {user && <NavBar user={user} />}
 
       <Routes>
@@ -68,6 +70,8 @@ function App() {
             user ? <Navigate to="/" replace /> : <AuthForm onLogin={setUser} />
           }
         />
+        <Route path="/saved" element={<SavedStrategies />} />
+        <Route path="/strategy/:id" element={<FullStratView />} />
       </Routes>
     </div>
   );

@@ -58,7 +58,6 @@ def run_backtest(inputs: Inputs):
             if inputs.strategy == "ema":
                 signals, indicator_series = ema_strategy(df, inputs.fast, inputs.slow)
             if inputs.strategy == "rsi":
-                print("▶️ Running RSI strategy with period:", inputs.period)
                 signals, indicator_series = rsi_strategy(df, inputs.period)
             metrics = get_metrics(signals, df)
 

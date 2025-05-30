@@ -8,29 +8,33 @@ function CandleChart({ data, ticker, signals, indicators = [] }) {
   const [showRSI, setShowRSI] = useState(true);
 
   useEffect(() => {
-    if (!data || data.length === 0) {
-      return;
-    }
+    if (!data || data.length === 0) return;
+
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
       height: 400,
       layout: {
-        background: { color: "#ffffff" },
-        textColor: "#333",
+        background: { color: "#111827" },
+        textColor: "#e5e7eb",
       },
       grid: {
-        vertLines: { color: "#eee" },
-        horzLines: { color: "#eee" },
+        vertLines: { color: "#1f2937" },
+        horzLines: { color: "#1f2937" },
       },
       timeScale: {
         timeVisible: true,
         secondsVisible: false,
       },
     });
-    const candleSeries = chart.addCandlestickSeries();
 
-    let fastLine = null;
-    let slowLine = null;
+    const candleSeries = chart.addCandlestickSeries({
+      upColor: "#16a34a",
+      downColor: "#dc2626",
+      borderUpColor: "#16a34a",
+      borderDownColor: "#dc2626",
+      wickUpColor: "#16a34a",
+      wickDownColor: "#dc2626",
+    });
 
     const formattedData = data.map((row) => {
       const [year, month, day] = row.Date.split("-").map(Number);
@@ -42,6 +46,7 @@ function CandleChart({ data, ticker, signals, indicators = [] }) {
         close: parseFloat(row[`Close_${ticker.toUpperCase()}`]),
       };
     });
+
     candleSeries.setData(formattedData);
 
     const markers = signals.map((s) => {
@@ -49,16 +54,16 @@ function CandleChart({ data, ticker, signals, indicators = [] }) {
       return {
         time: { year, month, day },
         position: s.type.toLowerCase() === "buy" ? "belowBar" : "aboveBar",
-        color: s.type.toLowerCase() === "buy" ? "#0f0" : "#f00",
+        color: s.type.toLowerCase() === "buy" ? "#16a34a" : "#dc2626",
         text: s.type.toLowerCase() === "buy" ? "▲" : "▼",
       };
     });
 
     candleSeries.setMarkers(markers);
 
-    if (indicators.length > 0) {
-      const isValidDate = (date) => /^\d{4}-\d{2}-\d{2}$/.test(date);
+    const isValidDate = (date) => /^\d{4}-\d{2}-\d{2}$/.test(date);
 
+    if (indicators.length > 0) {
       const fastData = indicators
         .filter(
           (item) =>
@@ -66,7 +71,6 @@ function CandleChart({ data, ticker, signals, indicators = [] }) {
             typeof item.fast === "number" &&
             !isNaN(item.fast)
         )
-        .sort((a, b) => new Date(a.date) - new Date(b.date))
         .map((item) => {
           const [year, month, day] = item.date
             .split(" ")[0]
@@ -82,7 +86,6 @@ function CandleChart({ data, ticker, signals, indicators = [] }) {
             typeof item.slow === "number" &&
             !isNaN(item.slow)
         )
-        .sort((a, b) => new Date(a.date) - new Date(b.date))
         .map((item) => {
           const [year, month, day] = item.date
             .split(" ")[0]
@@ -92,29 +95,25 @@ function CandleChart({ data, ticker, signals, indicators = [] }) {
         });
 
       if (showFast && fastData.length > 0) {
-        fastLine = chart.addLineSeries({
-          color: "#0000ff",
+        const fastLine = chart.addLineSeries({
+          color: "#6366f1",
           lineWidth: 2,
-          overlay: true,
-          priceScaleId: "right",
         });
         fastLine.setData(fastData);
       }
 
       if (showSlow && slowData.length > 0) {
-        slowLine = chart.addLineSeries({
-          color: "#ffa500",
+        const slowLine = chart.addLineSeries({
+          color: "#8b5cf6",
           lineWidth: 2,
-          overlay: true,
-          priceScaleId: "right",
         });
         slowLine.setData(slowData);
       }
     }
+
     if (showRSI && indicators.some((item) => item.rsi !== undefined)) {
       const rsiData = indicators
         .filter((item) => item.rsi !== undefined && !isNaN(item.rsi))
-        .sort((a, b) => new Date(a.date) - new Date(b.date))
         .map((item) => {
           const [year, month, day] = item.date
             .split(" ")[0]
@@ -125,27 +124,20 @@ function CandleChart({ data, ticker, signals, indicators = [] }) {
 
       if (rsiData.length > 0) {
         const rsiSeries = chart.addLineSeries({
-          color: "#8b5cf6",
+          color: "#ec4899",
           lineWidth: 2,
-          overlay: true,
           priceScaleId: "rsi-scale",
         });
-
         rsiSeries.setData(rsiData);
 
         const drawThresholdLine = (value) => {
-          const thresholdSeries = chart.addLineSeries({
-            color: "#f59e0b",
-            lineWidth: 2,
+          const threshold = chart.addLineSeries({
+            color: "#facc15",
+            lineWidth: 1,
             lineStyle: 2,
             priceScaleId: "rsi-scale",
           });
-          thresholdSeries.setData(
-            rsiData.map((d) => ({
-              time: d.time,
-              value,
-            }))
-          );
+          threshold.setData(rsiData.map((d) => ({ time: d.time, value })));
         };
 
         drawThresholdLine(70);
@@ -161,55 +153,60 @@ function CandleChart({ data, ticker, signals, indicators = [] }) {
 
     return () => chart.remove();
   }, [data, ticker, signals, indicators, showFast, showSlow, showRSI]);
+
   return (
-    <div className="w-full space-y-2">
+    <div className="w-full space-y-3 text-white">
       {indicators.length > 0 && indicators[0].fast !== undefined && (
-        <div className="flex gap-4 mb-2">
-          <label className="flex items-center gap-3">
-            <span className="text-sm text-gray-700">Show Fast</span>
-            <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+        <div className="flex gap-6 items-center text-sm">
+          <label className="flex items-center gap-2">
+            <span>Show Fast</span>
+            <div className="relative inline-block w-10 h-6">
               <input
                 type="checkbox"
                 checked={showFast}
                 onChange={() => setShowFast(!showFast)}
-                className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+                className="sr-only peer"
               />
-              <span className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300"></span>
+              <div className="w-10 h-6 bg-gray-700 peer-checked:bg-purple-600 rounded-full transition-colors" />
+              <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 transform peer-checked:translate-x-4" />
             </div>
           </label>
-
-          <label className="flex items-center gap-3">
-            <span className="text-sm text-gray-700">Show Slow</span>
-            <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+          <label className="flex items-center gap-2">
+            <span>Show Slow</span>
+            <div className="relative inline-block w-10 h-6">
               <input
                 type="checkbox"
                 checked={showSlow}
                 onChange={() => setShowSlow(!showSlow)}
-                className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+                className="sr-only peer"
               />
-              <span className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300"></span>
+              <div className="w-10 h-6 bg-gray-700 peer-checked:bg-purple-600 rounded-full transition-colors" />
+              <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 transform peer-checked:translate-x-4" />
             </div>
           </label>
         </div>
       )}
       {indicators.length > 0 && indicators[0].rsi !== undefined && (
-        <div className="flex gap-4 mb-2">
-          <label className="flex items-center gap-3">
-            <span className="text-sm text-gray-700">Show RSI</span>
-            <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+        <div className="flex gap-6 items-center text-sm">
+          <label className="flex items-center gap-2">
+            <span>Show RSI</span>
+            <div className="relative inline-block w-10 h-6">
               <input
                 type="checkbox"
                 checked={showRSI}
                 onChange={() => setShowRSI(!showRSI)}
-                className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+                className="sr-only peer"
               />
-              <span className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300"></span>
+              <div className="w-10 h-6 bg-gray-700 peer-checked:bg-purple-600 rounded-full transition-colors" />
+              <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 transform peer-checked:translate-x-4" />
             </div>
           </label>
         </div>
       )}
-
-      <div ref={chartContainerRef} className="w-full" />
+      <div
+        ref={chartContainerRef}
+        className="w-full rounded overflow-hidden border border-gray-700"
+      />
     </div>
   );
 }

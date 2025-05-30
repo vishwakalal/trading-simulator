@@ -8,3 +8,8 @@
 .toggle-checkbox:checked + .toggle-label {
   background-color: #4f46e5;
 }
+
+html,
+body {
+  @apply bg-gray-900 text-white;
+}
