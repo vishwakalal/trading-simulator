@@ -7,7 +7,8 @@ class Inputs(BaseModel):
     ticker: str
     start_date: str 
     end_date: str
-    strategy: Literal["sma", "rsi", "ema"]
+    strategy: Literal["sma", "rsi", "ema","bollinger"]
     fast: Optional[int] = None
     slow: Optional[int] = None
     period: Optional[int] = None
+    multiplier: Optional[float] = None

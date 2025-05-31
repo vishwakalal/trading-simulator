@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
+import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 function NavBar({ user }) {
@@ -24,9 +25,12 @@ function NavBar({ user }) {
 
   return (
     <nav className="bg-gray-800 text-white shadow-md px-4 py-2 flex justify-between items-center mb-4 rounded">
-      <div className="text-lg font-semibold text-purple-400">
+      <Link
+        to="/"
+        className="text-lg font-semibold text-purple-400 hover:underline focus:outline-none"
+      >
         📊 Trading Strategy Simulator
-      </div>
+      </Link>
 
       <div className="relative" ref={menuRef}>
         <button

@@ -25,6 +25,8 @@ function BackTestResults({ data }) {
     price_data = [],
     indicators = [],
   } = data;
+  console.log("strategy", strategy);
+  console.log("🧪 Full data payload", data);
   return (
     <div className="mt-8 p-6 bg-gray-900 text-white rounded shadow-md w-full max-w-7xl mx-auto space-y-6">
       <div>
@@ -46,6 +48,7 @@ function BackTestResults({ data }) {
             ticker={ticker}
             signals={signals}
             indicators={data.indicators}
+            strategy={strategy}
           />
         </div>
       </div>
@@ -69,7 +72,12 @@ function BackTestResults({ data }) {
             const name = strategyTitle;
             let params = {};
 
-            if (indicators?.[0]?.fast !== undefined) {
+            if (strategy === "bollinger") {
+              params = {
+                period: indicators?.[0]?.period ?? null,
+                multiplier: indicators?.[0]?.multiplier ?? null,
+              };
+            } else if (indicators?.[0]?.fast !== undefined) {
               params = { fast: indicators[0].fast, slow: indicators[0].slow };
             } else if (indicators?.[0]?.rsi !== undefined) {
               params = { period: indicators.length };
@@ -95,9 +103,6 @@ function BackTestResults({ data }) {
             setShowModal(false);
             if (error) {
               console.error("Save failed:", error.message);
-              alert("Error saving strategy.");
-            } else {
-              alert("Strategy saved!");
             }
           }}
         />

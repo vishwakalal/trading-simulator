@@ -9,6 +9,7 @@ function StrategyForm({ onSubmit }) {
   const [slow, setSlow] = useState("");
   const [period, setPeriod] = useState("");
   const [errors, setErrors] = useState({});
+  const [multiplier, setMultiplier] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,13 +22,20 @@ function StrategyForm({ onSubmit }) {
     } else if (startDate > endDate) {
       newErrors.date = "Start date must be before end date";
     }
-    if (strategy !== "rsi") {
+    if (strategy === "sma" || strategy === "ema") {
       if (!fast || !slow) {
         newErrors.speed = "Fast and slow values are required";
       } else if (Number(fast) > Number(slow)) {
         newErrors.speed = "Slow must be greater than fast";
       }
     }
+
+    if (strategy === "bollinger") {
+      if (!period || !multiplier) {
+        newErrors.bollinger = "Both period and multiplier are required";
+      }
+    }
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -41,6 +49,7 @@ function StrategyForm({ onSubmit }) {
       fast: fast !== "" ? Number(fast) : null,
       slow: slow !== "" ? Number(slow) : null,
       period: period !== "" ? Number(period) : null,
+      multiplier: multiplier !== "" ? Number(multiplier) : null,
     };
     try {
       await onSubmit(inputs);
@@ -76,12 +85,13 @@ function StrategyForm({ onSubmit }) {
         <select
           value={strategy}
           onChange={(e) => setStrategy(e.target.value)}
-          className="border border-gray-700 bg-gray-800 p-2 w-full rounded text-white"
+          className="border border-gray-700 bg-gray-800 p-2 w-full rounded text-gray-600"
         >
-          <option value="">-- Select Strategy --</option>
+          <option value=""></option>
           <option value="sma">SMA</option>
           <option value="ema">EMA</option>
           <option value="rsi">RSI</option>
+          <option value="bollinger">Bollinger Bands</option>
         </select>
       </div>
 
@@ -95,7 +105,7 @@ function StrategyForm({ onSubmit }) {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="border border-gray-700 bg-gray-800 p-2 w-full rounded text-white"
+              className="border border-gray-700 bg-gray-800 p-2 w-full rounded text-gray-600"
             />
           </div>
           <div className="flex-1">
@@ -106,7 +116,7 @@ function StrategyForm({ onSubmit }) {
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="border border-gray-700 bg-gray-800 p-2 w-full rounded text-white"
+              className="border border-gray-700 bg-gray-800 p-2 w-full rounded text-gray-600"
             />
           </div>
         </div>
@@ -156,6 +166,33 @@ function StrategyForm({ onSubmit }) {
             }
             className="border border-gray-700 bg-gray-800 p-2 w-full rounded text-white"
           />
+        </div>
+      )}
+
+      {strategy === "bollinger" && (
+        <div className="w-full space-y-2">
+          <div>
+            <label className="block font-medium text-white">Period</label>
+            <input
+              type="number"
+              value={period}
+              onChange={(e) => setPeriod(Number(e.target.value))}
+              className="border p-2 w-full bg-gray-700 text-white rounded"
+            />
+          </div>
+          <div>
+            <label className="block font-medium text-white">Multiplier</label>
+            <input
+              type="number"
+              step="0.1"
+              value={multiplier}
+              onChange={(e) => setMultiplier(Number(e.target.value))}
+              className="border p-2 w-full bg-gray-700 text-white rounded"
+            />
+          </div>
+          {errors.bollinger && (
+            <p className="text-red-500 text-sm mt-1">{errors.bollinger}</p>
+          )}
         </div>
       )}
 

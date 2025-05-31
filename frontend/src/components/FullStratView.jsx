@@ -81,6 +81,7 @@ function FullStratView() {
               ticker={ticker}
               signals={signals}
               indicators={indicators}
+              strategy={stratType}
             />
           </div>
         </div>

@@ -1,11 +1,15 @@
 import { createChart } from "lightweight-charts";
 import { useEffect, useRef, useState } from "react";
 
-function CandleChart({ data, ticker, signals, indicators = [] }) {
+function CandleChart({ data, ticker, signals, indicators = [], strategy }) {
   const chartContainerRef = useRef();
   const [showFast, setShowFast] = useState(true);
   const [showSlow, setShowSlow] = useState(true);
   const [showRSI, setShowRSI] = useState(true);
+  const [showBands, setShowBands] = useState(true);
+  const [showLines, setShowLines] = useState(true);
+
+  console.log("strat: ", strategy);
 
   useEffect(() => {
     if (!data || data.length === 0) return;
@@ -62,6 +66,12 @@ function CandleChart({ data, ticker, signals, indicators = [] }) {
     candleSeries.setMarkers(markers);
 
     const isValidDate = (date) => /^\d{4}-\d{2}-\d{2}$/.test(date);
+    const bollingerData = indicators
+      .filter((item) => item.SMA !== undefined && isValidDate(item.date))
+      .map((item) => {
+        const [year, month, day] = item.date.split("-").map(Number);
+        return { time: { year, month, day }, value: item.SMA };
+      });
 
     if (indicators.length > 0) {
       const fastData = indicators
@@ -109,6 +119,64 @@ function CandleChart({ data, ticker, signals, indicators = [] }) {
         });
         slowLine.setData(slowData);
       }
+
+      const bollingerIndicators = indicators.filter(
+        (item) =>
+          item.SMA !== undefined &&
+          item.Upper !== undefined &&
+          item.Lower !== undefined
+      );
+
+      if (bollingerIndicators.length > 0) {
+        const formatLine = (key) =>
+          bollingerIndicators.map((item) => ({
+            time: item.date,
+            value: item[key],
+          }));
+
+        // Only draw bands if enabled
+        if (showBands) {
+          const smaSeries = chart.addLineSeries({
+            color: "#ffffff",
+            lineWidth: 1,
+          });
+          smaSeries.setData(formatLine("SMA"));
+
+          const upperSeries = chart.addLineSeries({
+            color: "#facc15",
+            lineWidth: 1,
+          });
+          upperSeries.setData(formatLine("Upper"));
+
+          const lowerSeries = chart.addLineSeries({
+            color: "#facc15",
+            lineWidth: 1,
+          });
+          lowerSeries.setData(formatLine("Lower"));
+        }
+
+        // Only draw horizontal lines if enabled AND bands are off
+        if (showLines) {
+          const drawDashedLine = (value) => {
+            const series = chart.addLineSeries({
+              color: "#facc15",
+              lineStyle: 2, // dashed
+              lineWidth: 1,
+            });
+            series.setData(
+              bollingerIndicators.map((item) => ({
+                time: item.date,
+                value,
+              }))
+            );
+          };
+
+          const latest = bollingerIndicators[bollingerIndicators.length - 1];
+          drawDashedLine(latest.Upper);
+          drawDashedLine(latest.SMA);
+          drawDashedLine(latest.Lower);
+        }
+      }
     }
 
     if (showRSI && indicators.some((item) => item.rsi !== undefined)) {
@@ -149,10 +217,51 @@ function CandleChart({ data, ticker, signals, indicators = [] }) {
           borderVisible: false,
         });
       }
+
+      if (indicators.length > 0 && indicators[0].upper_band !== undefined) {
+        const upperData = indicators.map((item) => {
+          const [year, month, day] = item.date
+            .split(" ")[0]
+            .split("-")
+            .map(Number);
+          return { time: { year, month, day }, value: item.upper_band };
+        });
+
+        const lowerData = indicators.map((item) => {
+          const [year, month, day] = item.date
+            .split(" ")[0]
+            .split("-")
+            .map(Number);
+          return { time: { year, month, day }, value: item.lower_band };
+        });
+
+        const upperSeries = chart.addLineSeries({
+          color: "#6366f1",
+          lineWidth: 1,
+        });
+        upperSeries.setData(upperData);
+
+        const lowerSeries = chart.addLineSeries({
+          color: "#6366f1",
+          lineWidth: 1,
+        });
+        lowerSeries.setData(lowerData);
+      }
     }
 
     return () => chart.remove();
-  }, [data, ticker, signals, indicators, showFast, showSlow, showRSI]);
+  }, [
+    data,
+    ticker,
+    signals,
+    indicators,
+    strategy,
+    showFast,
+    showSlow,
+    showRSI,
+    showBands,
+    showLines,
+  ]);
 
   return (
     <div className="w-full space-y-3 text-white">
@@ -203,6 +312,41 @@ function CandleChart({ data, ticker, signals, indicators = [] }) {
           </label>
         </div>
       )}
+
+      {strategy === "bollinger" &&
+        (() => {
+          return (
+            <div className="flex gap-6 items-center text-sm">
+              <label className="flex items-center gap-3">
+                <span className="text-sm text-white">Show Bands</span>
+                <div className="relative inline-block w-10 mr-2 align-middle select-none">
+                  <input
+                    type="checkbox"
+                    checked={showBands}
+                    onChange={() => setShowBands(!showBands)}
+                    className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+                  />
+                  <span className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600"></span>
+                </div>
+              </label>
+              <label className="flex items-center gap-3">
+                <span className="text-sm text-white">
+                  Show Horizontal Lines
+                </span>
+                <div className="relative inline-block w-10 mr-2 align-middle select-none">
+                  <input
+                    type="checkbox"
+                    checked={showLines}
+                    onChange={() => setShowLines(!showLines)}
+                    className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+                  />
+                  <span className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600"></span>
+                </div>
+              </label>
+            </div>
+          );
+        })()}
+
       <div
         ref={chartContainerRef}
         className="w-full rounded overflow-hidden border border-gray-700"

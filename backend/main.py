@@ -8,7 +8,9 @@ from services.data import get_stock_data
 from strategies.sma import sma_strategy
 from strategies.ema import ema_strategy
 from strategies.rsi import rsi_strategy
+from strategies.bollinger import bollinger_strategy
 from services.metrics import get_metrics
+from datetime import datetime   
 
 
 app = FastAPI()
@@ -44,22 +46,31 @@ def run_backtest(inputs: Inputs):
         preview_records = preview_df.astype(str).to_dict(orient="records")
         full_records = df.astype(str).to_dict(orient="records")
 
-
         signals = []
         metrics = {}
         indicator_series = []
-        if inputs.strategy in ["sma", "ema", "rsi"]:
-            for col in df.columns:
-                if "Close" in col:
-                    df = df.rename(columns={col: "Close"})
-                    break
-            if inputs.strategy == "sma":
-                signals, indicator_series = sma_strategy(df, inputs.fast, inputs.slow)
-            if inputs.strategy == "ema":
-                signals, indicator_series = ema_strategy(df, inputs.fast, inputs.slow)
-            if inputs.strategy == "rsi":
-                signals, indicator_series = rsi_strategy(df, inputs.period)
-            metrics = get_metrics(signals, df)
+
+        for col in df.columns:
+            if "Close" in col:
+                df = df.rename(columns={col: "Close"})
+                break
+
+        if inputs.strategy == "sma":
+            signals, indicator_series = sma_strategy(df, inputs.fast, inputs.slow)
+        elif inputs.strategy == "ema":
+            signals, indicator_series = ema_strategy(df, inputs.fast, inputs.slow)
+        elif inputs.strategy == "rsi":
+            signals, indicator_series = rsi_strategy(df, inputs.period)
+        elif inputs.strategy == "bollinger":
+            period = inputs.period
+            multiplier = inputs.multiplier
+            if not period or not multiplier:
+                raise HTTPException(status_code=400, detail="Bollinger parameters missing")
+            signals, indicator_series = bollinger_strategy(df, period, multiplier)
+        else:
+            raise HTTPException(status_code=400, detail="Unsupported strategy")
+
+        metrics = get_metrics(signals, df)
 
         response = {
             "ticker": inputs.ticker,
@@ -72,6 +83,7 @@ def run_backtest(inputs: Inputs):
             "signals": signals,
             "metrics": metrics,
             "indicators": indicator_series,
+            "strategy": inputs.strategy,
         }
 
         return response
