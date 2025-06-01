@@ -8,8 +8,7 @@ function CandleChart({ data, ticker, signals, indicators = [], strategy }) {
   const [showRSI, setShowRSI] = useState(true);
   const [showBands, setShowBands] = useState(true);
   const [showLines, setShowLines] = useState(true);
-
-  console.log("strat: ", strategy);
+  const [showMACD, setShowMACD] = useState(true);
 
   useEffect(() => {
     if (!data || data.length === 0) return;
@@ -52,16 +51,33 @@ function CandleChart({ data, ticker, signals, indicators = [], strategy }) {
     });
 
     candleSeries.setData(formattedData);
+    const isValidISODate = (str) =>
+      typeof str === "string" && /^\d{4}-\d{2}-\d{2}/.test(str);
+    const markers = signals
+      .filter(
+        (s) => s?.date && typeof s.date === "string" && s.date.includes("-")
+      )
+      .map((s) => {
+        try {
+          const [year, month, day] = s.date
+            .split("T")[0]
+            .split("-")
+            .map(Number);
+          return {
+            time: { year, month, day },
+            position: s.type.toLowerCase() === "buy" ? "belowBar" : "aboveBar",
+            color: s.type.toLowerCase() === "buy" ? "#16a34a" : "#dc2626",
+            text: s.type.toLowerCase() === "buy" ? "▲" : "▼",
+          };
+        } catch (err) {
+          console.warn("Skipping invalid signal:", s);
+          return null;
+        }
+      })
+      .filter((m) => m !== null);
 
-    const markers = signals.map((s) => {
-      const [year, month, day] = s.date.split(" ")[0].split("-").map(Number);
-      return {
-        time: { year, month, day },
-        position: s.type.toLowerCase() === "buy" ? "belowBar" : "aboveBar",
-        color: s.type.toLowerCase() === "buy" ? "#16a34a" : "#dc2626",
-        text: s.type.toLowerCase() === "buy" ? "▲" : "▼",
-      };
-    });
+    console.log("Markers to be set:", markers);
+    console.log("🚨 Raw signals:", signals);
 
     candleSeries.setMarkers(markers);
 
@@ -134,7 +150,6 @@ function CandleChart({ data, ticker, signals, indicators = [], strategy }) {
             value: item[key],
           }));
 
-        // Only draw bands if enabled
         if (showBands) {
           const smaSeries = chart.addLineSeries({
             color: "#ffffff",
@@ -154,13 +169,11 @@ function CandleChart({ data, ticker, signals, indicators = [], strategy }) {
           });
           lowerSeries.setData(formatLine("Lower"));
         }
-
-        // Only draw horizontal lines if enabled AND bands are off
         if (showLines) {
           const drawDashedLine = (value) => {
             const series = chart.addLineSeries({
               color: "#facc15",
-              lineStyle: 2, // dashed
+              lineStyle: 2,
               lineWidth: 1,
             });
             series.setData(
@@ -249,6 +262,48 @@ function CandleChart({ data, ticker, signals, indicators = [], strategy }) {
       }
     }
 
+    if (strategy === "macd" && showMACD) {
+      const macdData = indicators.map((item) => ({
+        time: item.date,
+        value: item.macd_line,
+      }));
+      const signalData = indicators.map((item) => ({
+        time: item.date,
+        value: item.signal_line,
+      }));
+
+      const macdSeries = chart.addLineSeries({
+        color: "#10b981",
+        lineWidth: 2,
+        priceScaleId: "macd-scale",
+      });
+      macdSeries.setData(macdData);
+
+      const signalSeries = chart.addLineSeries({
+        color: "#f97316",
+        lineWidth: 2,
+        priceScaleId: "macd-scale",
+      });
+      signalSeries.setData(signalData);
+      chart.priceScale("macd-scale").applyOptions({
+        position: "right",
+        scaleMargins: { top: 0.75, bottom: 0.1 },
+        borderVisible: false,
+      });
+      const histogramData = indicators.map((item) => ({
+        time: item.date,
+        value: item.histogram,
+        color: item.histogram >= 0 ? "#10b981" : "#ef4444",
+      }));
+
+      const histogramSeries = chart.addHistogramSeries({
+        priceScaleId: "macd-scale",
+        base: 0,
+      });
+
+      histogramSeries.setData(histogramData);
+    }
+
     return () => chart.remove();
   }, [
     data,
@@ -261,6 +316,7 @@ function CandleChart({ data, ticker, signals, indicators = [], strategy }) {
     showRSI,
     showBands,
     showLines,
+    showMACD,
   ]);
 
   return (
@@ -346,6 +402,23 @@ function CandleChart({ data, ticker, signals, indicators = [], strategy }) {
             </div>
           );
         })()}
+      {strategy === "macd" && (
+        <div className="flex gap-6 items-center text-sm">
+          <label className="flex items-center gap-2">
+            <span>Show MACD</span>
+            <div className="relative inline-block w-10 h-6">
+              <input
+                type="checkbox"
+                checked={showMACD}
+                onChange={() => setShowMACD(!showMACD)}
+                className="sr-only peer"
+              />
+              <div className="w-10 h-6 bg-gray-700 peer-checked:bg-purple-600 rounded-full transition-colors" />
+              <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 transform peer-checked:translate-x-4" />
+            </div>
+          </label>
+        </div>
+      )}
 
       <div
         ref={chartContainerRef}

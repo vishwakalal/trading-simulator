@@ -10,6 +10,7 @@ from strategies.ema import ema_strategy
 from strategies.rsi import rsi_strategy
 from strategies.bollinger import bollinger_strategy
 from services.metrics import get_metrics
+from strategies.macd import macd_strategy
 from datetime import datetime   
 
 
@@ -33,6 +34,7 @@ def read_root():
 def run_backtest(inputs: Inputs):
     try:
         df = get_stock_data(inputs.ticker, inputs.start_date, inputs.end_date)
+        price_data = df.reset_index().to_dict(orient="records")
         if df is None or df.empty:
             raise HTTPException(status_code=400, detail="Invalid ticker or no data available.")
 
@@ -67,6 +69,8 @@ def run_backtest(inputs: Inputs):
             if not period or not multiplier:
                 raise HTTPException(status_code=400, detail="Bollinger parameters missing")
             signals, indicator_series = bollinger_strategy(df, period, multiplier)
+        elif inputs.strategy == "macd":
+            signals, indicator_series = macd_strategy(df)
         else:
             raise HTTPException(status_code=400, detail="Unsupported strategy")
 

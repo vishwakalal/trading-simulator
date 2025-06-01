@@ -92,6 +92,7 @@ function StrategyForm({ onSubmit }) {
           <option value="ema">EMA</option>
           <option value="rsi">RSI</option>
           <option value="bollinger">Bollinger Bands</option>
+          <option value="macd">MACD</option>
         </select>
       </div>
 
