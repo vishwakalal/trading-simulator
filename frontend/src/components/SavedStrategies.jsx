@@ -46,7 +46,13 @@ function SavedStrategies() {
       </h2>
 
       {loading ? (
-        <p className="text-gray-400">Loading...</p>
+        <div className="flex justify-center items-center py-8">
+          <img
+            src="/Logo.png"
+            alt="Loading"
+            className="w-16 h-16 animate-spin-slow animate-pulse-glow"
+          />
+        </div>
       ) : strategies.length === 0 ? (
         <p className="text-sm text-gray-500">No saved strategies found.</p>
       ) : (

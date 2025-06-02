@@ -41,7 +41,17 @@ function FullStratView() {
     fetchStrategy();
   }, [id]);
 
-  if (loading) return <p className="p-4 text-white">Loading...</p>;
+  if (loading)
+    return (
+      <div className="min-h-screen flex justify-center items-center bg-[#0f172a]">
+        <img
+          src="/Logo.png"
+          alt="Loading"
+          className="w-20 h-20 animate-spin-slow animate-pulse-glow"
+        />
+      </div>
+    );
+
   if (!strategy) return <p className="p-4 text-red-400">Strategy not found.</p>;
 
   const {

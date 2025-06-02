@@ -40,3 +40,65 @@
 .read-the-docs {
   color: #888;
 }
+@keyframes trace {
+  0% {
+    stroke-dashoffset: 2000;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes glow {
+  0% {
+    filter: drop-shadow(0 0 4px #a855f7);
+  }
+  100% {
+    filter: drop-shadow(0 0 10px #a855f7);
+  }
+}
+
+.trace-path {
+  stroke: #a855f7;
+  stroke-width: 2;
+  fill: none;
+  stroke-dasharray: 2000;
+  stroke-dashoffset: 2000;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation:
+    trace 3s linear infinite,
+    glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes pulseGlow {
+  0% {
+    filter: drop-shadow(0 0 4px #a855f7);
+    opacity: 0.9;
+  }
+  50% {
+    filter: drop-shadow(0 0 12px #a855f7);
+    opacity: 1;
+  }
+  100% {
+    filter: drop-shadow(0 0 4px #a855f7);
+    opacity: 0.9;
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin 1.5s linear infinite;
+}
