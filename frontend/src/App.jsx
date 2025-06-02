@@ -25,7 +25,7 @@ function App() {
   const handleRun = async (inputs) => {
     try {
       const response = await axios.post(
-        "http://localhost:8000/backtest",
+        `${import.meta.env.VITE_API_URL}/backtest`,
         inputs
       );
       setResults(response.data);
