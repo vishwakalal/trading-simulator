@@ -29,7 +29,7 @@ function NavBar({ user }) {
         <img
           src="/Logo.png"
           alt="App Logo"
-          className="h-10 w-auto transform scale-150"
+          className="h-10 w-auto transform scale-150 animate-pulse-glow"
         />
       </Link>
 
