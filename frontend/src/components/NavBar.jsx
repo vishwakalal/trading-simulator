@@ -25,11 +25,12 @@ function NavBar({ user }) {
 
   return (
     <nav className="bg-gray-800 text-white shadow-md px-4 py-2 flex justify-between items-center mb-4 rounded">
-      <Link
-        to="/"
-        className="text-lg font-semibold text-purple-400 hover:underline focus:outline-none"
-      >
-        📊 Trading Strategy Simulator
+      <Link to="/" className="flex items-center space-x-2">
+        <img
+          src="/Logo.png"
+          alt="App Logo"
+          className="h-10 w-auto transform scale-150"
+        />
       </Link>
 
       <div className="relative" ref={menuRef}>

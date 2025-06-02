@@ -11,6 +11,7 @@ def ema_strategy(
 
     df["EMA_fast"] = df["Close"].ewm(span=fast, adjust=False).mean()
     df["EMA_slow"] = df["Close"].ewm(span=slow, adjust=False).mean()
+    df["date"] = pd.to_datetime(df["Date"]).dt.strftime("%Y-%m-%d")
 
     signals = []
     for i in range(1, len(df)):
@@ -30,7 +31,7 @@ def ema_strategy(
                 signals.append(
                     {
                         "type": "buy",
-                        "date": str(df.loc[i, "Date"]),
+                        "date": df.loc[i, "date"],
                         "price": float(df.loc[i, "Close"]),
                     }
                 )
@@ -39,14 +40,14 @@ def ema_strategy(
                 signals.append(
                     {
                         "type": "sell",
-                        "date": str(df.loc[i, "Date"]),
+                        "date": df.loc[i, "date"],
                         "price": float(df.loc[i, "Close"]),
                     }
                 )
 
     indicator_series = [
             {
-                "date": str(df.loc[i, "Date"]),
+                "date": df.loc[i, "date"],
                 "fast": df.loc[i, "EMA_fast"],
                 "slow": df.loc[i, "EMA_slow"]
             }

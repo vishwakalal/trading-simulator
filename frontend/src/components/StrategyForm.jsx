@@ -10,6 +10,23 @@ function StrategyForm({ onSubmit }) {
   const [period, setPeriod] = useState("");
   const [errors, setErrors] = useState({});
   const [multiplier, setMultiplier] = useState("");
+  const [formData, setFormData] = useState({
+    ticker: "",
+    strategy: "",
+    start_date: "",
+    end_date: "",
+    fast: "",
+    slow: "",
+    period: "",
+    multiplier: "",
+    stop_loss: "",
+    take_profit: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,6 +52,12 @@ function StrategyForm({ onSubmit }) {
         newErrors.bollinger = "Both period and multiplier are required";
       }
     }
+    if (strategy === "custom") {
+      if (!fast || !slow || !formData.stop_loss || !formData.take_profit) {
+        newErrors.custom =
+          "Fast, Slow, Stop Loss, and Take Profit are required";
+      }
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -50,7 +73,11 @@ function StrategyForm({ onSubmit }) {
       slow: slow !== "" ? Number(slow) : null,
       period: period !== "" ? Number(period) : null,
       multiplier: multiplier !== "" ? Number(multiplier) : null,
+      stop_loss: formData.stop_loss !== "" ? Number(formData.stop_loss) : null,
+      take_profit:
+        formData.take_profit !== "" ? Number(formData.take_profit) : null,
     };
+
     try {
       await onSubmit(inputs);
     } catch (err) {
@@ -64,7 +91,7 @@ function StrategyForm({ onSubmit }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-gray-900 text-white p-6 rounded shadow-md space-y-6 w-full max-w-3xl mx-auto"
+      className="bg-gray-900 text-purple-400 p-6 rounded shadow-md space-y-6 w-full max-w-3xl mx-auto"
     >
       <h2 className="text-2xl font-semibold">Trading Strategy Inputs</h2>
 
@@ -73,8 +100,10 @@ function StrategyForm({ onSubmit }) {
         <input
           value={ticker}
           onChange={(e) => setTicker(e.target.value)}
-          className="border border-gray-700 bg-gray-800 p-2 w-full rounded text-white"
+          placeholder="Enter ticker"
+          className="border border-gray-700 bg-gray-800 p-2 w-full rounded text-white placeholder-gray-600"
         />
+
         {errors.ticker && (
           <p className="text-red-400 text-sm mt-1">{errors.ticker}</p>
         )}
@@ -85,7 +114,8 @@ function StrategyForm({ onSubmit }) {
         <select
           value={strategy}
           onChange={(e) => setStrategy(e.target.value)}
-          className="border border-gray-700 bg-gray-800 p-2 w-full rounded text-gray-600"
+          placeholder="Select strategy"
+          className="border border-gray-700 bg-gray-800 p-2 w-full rounded text-white placeholder-gray-600"
         >
           <option value=""></option>
           <option value="sma">SMA</option>
@@ -93,6 +123,7 @@ function StrategyForm({ onSubmit }) {
           <option value="rsi">RSI</option>
           <option value="bollinger">Bollinger Bands</option>
           <option value="macd">MACD</option>
+          <option value="custom">Custom</option>
         </select>
       </div>
 
@@ -106,7 +137,9 @@ function StrategyForm({ onSubmit }) {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="border border-gray-700 bg-gray-800 p-2 w-full rounded text-gray-600"
+              className={`border border-gray-700 bg-gray-800 p-2 w-full rounded ${
+                startDate ? "text-white" : "text-gray-600"
+              } placeholder-purple-300`}
             />
           </div>
           <div className="flex-1">
@@ -117,7 +150,9 @@ function StrategyForm({ onSubmit }) {
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="border border-gray-700 bg-gray-800 p-2 w-full rounded text-gray-600"
+              className={`border border-gray-700 bg-gray-800 p-2 w-full rounded ${
+                endDate ? "text-white" : "text-gray-600"
+              } placeholder-purple-300`}
             />
           </div>
         </div>
@@ -135,7 +170,8 @@ function StrategyForm({ onSubmit }) {
                 type="number"
                 value={fast}
                 onChange={(e) => setFast(Number(e.target.value))}
-                className="border border-gray-700 bg-gray-800 p-2 w-full rounded text-white"
+                placeholder="Enter fast value"
+                className="border border-gray-700 bg-gray-800 p-2 w-full rounded text-white placeholder-gray-600"
               />
             </div>
             <div className="flex-1">
@@ -144,7 +180,8 @@ function StrategyForm({ onSubmit }) {
                 type="number"
                 value={slow}
                 onChange={(e) => setSlow(Number(e.target.value))}
-                className="border border-gray-700 bg-gray-800 p-2 w-full rounded text-white"
+                placeholder="Enter slow value"
+                className="border border-gray-700 bg-gray-800 p-2 w-full rounded text-white placeholder-gray-600"
               />
             </div>
           </div>
@@ -165,36 +202,102 @@ function StrategyForm({ onSubmit }) {
             onChange={(e) =>
               setPeriod(e.target.value ? Number(e.target.value) : null)
             }
-            className="border border-gray-700 bg-gray-800 p-2 w-full rounded text-white"
+            placeholder="Enter period value"
+            className="border border-gray-700 bg-gray-800 p-2 w-full rounded text-white placeholder-gray-600"
           />
         </div>
       )}
 
       {strategy === "bollinger" && (
-        <div className="w-full space-y-2">
+        <div className="w-full space-y-4">
           <div>
-            <label className="block font-medium text-white">Period</label>
+            <label className="block font-medium text-purple-300">Period</label>
             <input
               type="number"
               value={period}
               onChange={(e) => setPeriod(Number(e.target.value))}
-              className="border p-2 w-full bg-gray-700 text-white rounded"
+              placeholder="Enter period value"
+              className="border border-gray-700 bg-gray-800 p-2 w-full rounded text-white placeholder-gray-600"
             />
           </div>
           <div>
-            <label className="block font-medium text-white">Multiplier</label>
+            <label className="block font-medium text-purple-300">
+              Multiplier
+            </label>
             <input
               type="number"
               step="0.1"
               value={multiplier}
               onChange={(e) => setMultiplier(Number(e.target.value))}
-              className="border p-2 w-full bg-gray-700 text-white rounded"
+              placeholder="Enter multiplier value"
+              className="border border-gray-700 bg-gray-800 p-2 w-full rounded text-white placeholder-gray-600"
             />
           </div>
           {errors.bollinger && (
-            <p className="text-red-500 text-sm mt-1">{errors.bollinger}</p>
+            <p className="text-red-400 text-sm mt-1">{errors.bollinger}</p>
           )}
         </div>
+      )}
+
+      {strategy === "custom" && (
+        <>
+          <div className="flex gap-4 mb-4">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-300">
+                Fast
+              </label>
+              <input
+                type="number"
+                value={fast}
+                onChange={(e) => setFast(Number(e.target.value))}
+                placeholder="Enter fast value"
+                className="w-full bg-gray-800 p-2 rounded border border-gray-700 text-white placeholder-gray-600"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-300">
+                Slow
+              </label>
+              <input
+                type="number"
+                value={slow}
+                onChange={(e) => setSlow(Number(e.target.value))}
+                placeholder="Enter slow value"
+                className="w-full bg-gray-800 p-2 rounded border border-gray-700 text-white placeholder-gray-600"
+              />
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-300">
+              Stop Loss %
+            </label>
+            <input
+              type="number"
+              step="0.001"
+              name="stop_loss"
+              value={formData.stop_loss || ""}
+              onChange={handleChange}
+              placeholder="Enter stop loss value (e.g., 0.005 for 0.5%)"
+              className="w-full bg-gray-800 p-2 rounded border border-gray-700 text-white placeholder-gray-600"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-300">
+              Take Profit %
+            </label>
+            <input
+              type="number"
+              step="0.001"
+              name="take_profit"
+              value={formData.take_profit || ""}
+              onChange={handleChange}
+              placeholder="Enter take profit value (e.g., 0.003 for 0.3%)"
+              className="w-full bg-gray-800 p-2 rounded border border-gray-700 text-white placeholder-gray-600"
+            />
+          </div>
+        </>
       )}
 
       <button

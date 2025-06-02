@@ -11,7 +11,9 @@ from strategies.rsi import rsi_strategy
 from strategies.bollinger import bollinger_strategy
 from services.metrics import get_metrics
 from strategies.macd import macd_strategy
+from strategies.custom import custom_strategy
 from datetime import datetime   
+import numpy as np
 
 
 app = FastAPI()
@@ -23,7 +25,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 @app.get("/")
 def read_root():
@@ -56,6 +57,7 @@ def run_backtest(inputs: Inputs):
             if "Close" in col:
                 df = df.rename(columns={col: "Close"})
                 break
+                
 
         if inputs.strategy == "sma":
             signals, indicator_series = sma_strategy(df, inputs.fast, inputs.slow)
@@ -71,8 +73,11 @@ def run_backtest(inputs: Inputs):
             signals, indicator_series = bollinger_strategy(df, period, multiplier)
         elif inputs.strategy == "macd":
             signals, indicator_series = macd_strategy(df)
-        else:
-            raise HTTPException(status_code=400, detail="Unsupported strategy")
+        elif inputs.strategy == "custom":
+            if not inputs.fast or not inputs.slow or not inputs.stop_loss or not inputs.take_profit:
+                raise HTTPException(status_code=400, detail="Custom strategy parameters missing")
+            signals, indicator_series = custom_strategy(df, inputs.fast, inputs.slow, inputs.stop_loss, inputs.take_profit)
+
 
         metrics = get_metrics(signals, df)
 

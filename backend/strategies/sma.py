@@ -10,6 +10,7 @@ def sma_strategy(
 
     df["SMA_fast"] = df["Close"].rolling(window=fast).mean()
     df["SMA_slow"] = df["Close"].rolling(window=slow).mean()
+    df["date"] = pd.to_datetime(df["Date"]).dt.strftime("%Y-%m-%d")
 
     signals = []
     for i in range(1, len(df)):
@@ -29,7 +30,7 @@ def sma_strategy(
                 signals.append(
                     {
                         "type": "buy",
-                        "date": str(df.loc[i, "Date"]),
+                        "date": df.loc[i, "date"],
                         "price": float(df.loc[i, "Close"]),
                     }
                 )
@@ -38,12 +39,12 @@ def sma_strategy(
                 signals.append(
                     {
                         "type": "sell",
-                        "date": str(df.loc[i, "Date"]),
+                        "date": df.loc[i, "date"],
                         "price": float(df.loc[i, "Close"]),
                     }
                 )
     indicator_series = [{
-        "date": str(df.loc[i,"Date"]),
+        "date": df.loc[i, "date"],
         "fast": df.loc[i,"SMA_fast"],
         "slow": df.loc[i,"SMA_slow"]
         }

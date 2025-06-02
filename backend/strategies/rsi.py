@@ -8,6 +8,7 @@ def rsi_strategy(df: pd.DataFrame, period: int = 14) -> (List[Dict[str, Union[st
     df = df.reset_index()
 
     df["Close"] = pd.to_numeric(df["Close"], errors="coerce")
+    
 
     delta = df["Close"].diff()
     gain = delta.clip(lower=0)
@@ -20,6 +21,7 @@ def rsi_strategy(df: pd.DataFrame, period: int = 14) -> (List[Dict[str, Union[st
     df["RSI"] = 100 - (100 / (1 + rs))
 
     df = df.dropna(subset=["RSI"])
+    df["date"] = pd.to_datetime(df["Date"]).dt.strftime("%Y-%m-%d")
 
     signals = []
     for i in range(1, len(df)):
@@ -29,19 +31,19 @@ def rsi_strategy(df: pd.DataFrame, period: int = 14) -> (List[Dict[str, Union[st
             if prev > 30 and curr <= 30:
                 signals.append({
                     "type": "buy",
-                    "date": str(df.iloc[i]["Date"]),
+                    "date": df.iloc[i]["date"],
                     "price": float(df.iloc[i]["Close"])
                 })
             elif prev < 70 and curr >= 70:
                 signals.append({
                     "type": "sell",
-                    "date": str(df.iloc[i]["Date"]),
+                    "date": df.iloc[i]["date"],
                     "price": float(df.iloc[i]["Close"])
                 })
 
 
     indicator_series = [
-        {"date": str(row["Date"]), "rsi": float(row["RSI"])}
+        {"date": row["date"], "rsi": float(row["RSI"])}
         for _, row in df.iterrows()
     ]
 
