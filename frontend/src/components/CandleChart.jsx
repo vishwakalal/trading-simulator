@@ -76,9 +76,6 @@ function CandleChart({ data, ticker, signals, indicators = [], strategy }) {
       })
       .filter((m) => m !== null);
 
-    console.log("Markers to be set:", markers);
-    console.log("🚨 Raw signals:", signals);
-
     candleSeries.setMarkers(markers);
 
     const isValidDate = (date) => /^\d{4}-\d{2}-\d{2}$/.test(date);

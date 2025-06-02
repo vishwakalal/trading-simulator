@@ -20,7 +20,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # You can change this to your frontend URL later
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -40,7 +40,6 @@ def run_backtest(inputs: Inputs):
             raise HTTPException(status_code=400, detail="Invalid ticker or no data available.")
 
 
-        # Flatten MultiIndex columns if needed
         if isinstance(df.columns[0], tuple):
             df.columns = ["_".join(filter(None, map(str, col))) for col in df.columns]
         df = df.reset_index()

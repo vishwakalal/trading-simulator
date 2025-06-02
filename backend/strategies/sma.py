@@ -26,7 +26,6 @@ def sma_strategy(
             and pd.notna(curr_slow)
         ):
             if prev_fast < prev_slow and curr_fast > curr_slow:
-                # Buy signal
                 signals.append(
                     {
                         "type": "buy",
@@ -35,7 +34,6 @@ def sma_strategy(
                     }
                 )
             elif prev_fast > prev_slow and curr_fast < curr_slow:
-                # Sell signal
                 signals.append(
                     {
                         "type": "sell",

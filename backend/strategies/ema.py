@@ -27,7 +27,6 @@ def ema_strategy(
             and pd.notna(curr_slow)
         ):
             if prev_fast < prev_slow and curr_fast > curr_slow:
-                # buy signal
                 signals.append(
                     {
                         "type": "buy",
@@ -36,7 +35,6 @@ def ema_strategy(
                     }
                 )
             elif prev_fast > prev_slow and curr_fast < curr_slow:
-                # sell signal
                 signals.append(
                     {
                         "type": "sell",

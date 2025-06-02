@@ -3,7 +3,6 @@ import pandas as pd
 def custom_strategy(df, fast, slow, stop_loss_pct, take_profit_pct):
     df = df.copy()
 
-    # Ensure 'Date' column exists
     if 'Date' not in df.columns:
         if 'date' in df.columns:
             df.rename(columns={'date': 'Date'}, inplace=True)
