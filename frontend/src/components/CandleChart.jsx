@@ -1,7 +1,14 @@
 import { createChart } from "lightweight-charts";
 import { useEffect, useRef, useState } from "react";
 
-function CandleChart({ data, ticker, signals, indicators = [], strategy }) {
+function CandleChart({
+  data,
+  ticker,
+  signals,
+  indicators = [],
+  strategy,
+  spyOverlay = [],
+}) {
   const chartContainerRef = useRef();
   const [showFast, setShowFast] = useState(true);
   const [showSlow, setShowSlow] = useState(true);
@@ -9,6 +16,7 @@ function CandleChart({ data, ticker, signals, indicators = [], strategy }) {
   const [showBands, setShowBands] = useState(true);
   const [showLines, setShowLines] = useState(true);
   const [showMACD, setShowMACD] = useState(true);
+  const [showSPY, setShowSPY] = useState(false);
 
   useEffect(() => {
     if (!data || data.length === 0) return;
@@ -49,8 +57,32 @@ function CandleChart({ data, ticker, signals, indicators = [], strategy }) {
         close: parseFloat(row[`Close_${ticker.toUpperCase()}`]),
       };
     });
-
     candleSeries.setData(formattedData);
+    if (showSPY && spyOverlay.length > 0) {
+      const spySeries = chart.addLineSeries({
+        color: "#9333ea",
+        lineWidth: 1.5,
+        priceScaleId: "spy-scale",
+      });
+
+      chart.priceScale("spy-scale").applyOptions({
+        position: "right",
+        visible: true,
+        scaleMargins: { top: 0.1, bottom: 0.1 },
+        borderVisible: false,
+      });
+
+      const spyData = spyOverlay.map((item) => {
+        const [year, month, day] = item.date.split("-").map(Number);
+        return {
+          time: { year, month, day },
+          value: item.price,
+        };
+      });
+
+      spySeries.setData(spyData);
+    }
+
     const isValidISODate = (str) =>
       typeof str === "string" && /^\d{4}-\d{2}-\d{2}/.test(str);
     const markers = signals
@@ -314,6 +346,7 @@ function CandleChart({ data, ticker, signals, indicators = [], strategy }) {
     showBands,
     showLines,
     showMACD,
+    showSPY,
   ]);
 
   return (
@@ -416,6 +449,21 @@ function CandleChart({ data, ticker, signals, indicators = [], strategy }) {
           </label>
         </div>
       )}
+      <div className="flex gap-6 items-center text-sm">
+        <label className="flex items-center gap-2">
+          <span>Show SPY</span>
+          <div className="relative inline-block w-10 h-6">
+            <input
+              type="checkbox"
+              checked={showSPY}
+              onChange={() => setShowSPY(!showSPY)}
+              className="sr-only peer"
+            />
+            <div className="w-10 h-6 bg-gray-700 peer-checked:bg-purple-600 rounded-full transition-colors" />
+            <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 transform peer-checked:translate-x-4" />
+          </div>
+        </label>
+      </div>
 
       <div
         ref={chartContainerRef}

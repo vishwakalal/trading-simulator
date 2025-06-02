@@ -5,7 +5,15 @@ import CandleChart from "./CandleChart";
 
 function formatDate(dateStr) {
   if (!dateStr) return "";
-  return new Date(dateStr).toLocaleDateString();
+  return new Date(dateStr).toLocaleString(undefined, {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric",
+    hour12: true,
+  });
 }
 
 function FullStratView() {
@@ -50,23 +58,13 @@ function FullStratView() {
 
   return (
     <div className="mt-8 p-6 bg-gray-900 text-white rounded shadow-md w-full max-w-7xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-semibold mb-1 text-purple-400">
-            {name}
-          </h2>
-          <p className="text-gray-400">
-            {stratType?.toUpperCase()} Strategy on{" "}
-            <strong className="text-white">{ticker?.toUpperCase()}</strong> from{" "}
-            {formatDate(start_date)} to {formatDate(end_date)}
-          </p>
-        </div>
-        <button
-          onClick={() => navigate("/saved")}
-          className="text-sm text-purple-300 underline hover:text-purple-400"
-        >
-          ← Back to Saved
-        </button>
+      <div className="text-center space-y-2">
+        <h2 className="text-2xl font-semibold text-purple-400">{name}</h2>
+        <p className="text-gray-400">
+          {stratType?.toUpperCase()} Strategy on{" "}
+          <strong className="text-white">{ticker?.toUpperCase()}</strong> from{" "}
+          {formatDate(start_date)} to {formatDate(end_date)}
+        </p>
       </div>
 
       {/* Chart */}
@@ -82,6 +80,7 @@ function FullStratView() {
               signals={signals}
               indicators={indicators}
               strategy={stratType}
+              spyOverlay={strategy.spy_overlay}
             />
           </div>
         </div>
@@ -92,7 +91,7 @@ function FullStratView() {
         <h3 className="text-lg font-medium mb-2 text-purple-300">
           Performance Metrics
         </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {metrics &&
             Object.entries(metrics).map(([key, value]) => (
               <div
@@ -103,10 +102,35 @@ function FullStratView() {
                   {key.replaceAll("_", " ")}
                 </h4>
                 <p className="text-xl font-semibold mt-1 text-white">
-                  {typeof value === "number" ? value.toFixed(2) : value}
+                  {typeof value === "number"
+                    ? `${value.toFixed(2)}${
+                        [
+                          "total_return",
+                          "capital_return",
+                          "win_rate",
+                          "max_drawdown",
+                        ].includes(key.toLowerCase().replaceAll(" ", "_"))
+                          ? "%"
+                          : ""
+                      }`
+                    : value}
                 </p>
               </div>
             ))}
+          {strategy.spy_delta_return !== undefined && (
+            <div className="bg-gray-800 rounded p-4 shadow text-center border border-gray-700">
+              <h4 className="text-sm text-gray-400">vs. SPY</h4>
+              <p
+                className={`text-xl font-semibold mt-1 ${
+                  Number(strategy.spy_delta_return) > 0
+                    ? "text-green-400"
+                    : "text-red-400"
+                }`}
+              >
+                {Number(strategy.spy_delta_return).toFixed(2)}%
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -150,6 +174,12 @@ function FullStratView() {
           </div>
         )}
       </div>
+      <button
+        onClick={() => navigate("/saved")}
+        className="flex items-center gap-2 px-4 py-2 bg-gray-800 border-purple-600 rounded hover:bg-purple-600 hover:text-white transition"
+      >
+        ←
+      </button>
     </div>
   );
 }

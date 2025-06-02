@@ -47,6 +47,13 @@ def run_backtest(inputs: Inputs):
         preview_df = df.head(5).reset_index()
         preview_records = preview_df.astype(str).to_dict(orient="records")
         full_records = df.astype(str).to_dict(orient="records")
+        spy_overlay = (
+            df[["Date", "Close_SPY"]]
+            .dropna()
+            .rename(columns={"Date": "date", "Close_SPY": "price"})
+            .astype({"date": str, "price": float})
+            .to_dict(orient="records")
+        )
 
         signals = []
         metrics = {}
@@ -79,6 +86,10 @@ def run_backtest(inputs: Inputs):
 
 
         metrics = get_metrics(signals, df)
+        spy_return = df["Close_SPY"].iloc[-1] / df["Close_SPY"].iloc[0] - 1
+        strategy_return = metrics.get("total_return", 0) / 100
+        delta_return = (strategy_return - spy_return) * 100
+
 
         response = {
             "ticker": inputs.ticker,
@@ -92,6 +103,8 @@ def run_backtest(inputs: Inputs):
             "metrics": metrics,
             "indicators": indicator_series,
             "strategy": inputs.strategy,
+            "spy_overlay": spy_overlay,
+            "spy_delta_return": round(delta_return, 2),
         }
 
         return response

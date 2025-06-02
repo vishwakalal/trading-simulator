@@ -24,6 +24,7 @@ function BackTestResults({ data }) {
     preview = [],
     price_data = [],
     indicators = [],
+    spy_delta_return = null,
   } = data;
   console.log("strategy", strategy);
   console.log("🧪 Full data payload", data);
@@ -49,6 +50,7 @@ function BackTestResults({ data }) {
             signals={signals}
             indicators={data.indicators}
             strategy={strategy}
+            spyOverlay={data.spy_overlay}
           />
         </div>
       </div>
@@ -96,6 +98,8 @@ function BackTestResults({ data }) {
                 signals,
                 indicators,
                 metrics,
+                spy_delta_return,
+                spy_overlay: data.spy_overlay,
               },
             ]);
 
@@ -112,7 +116,7 @@ function BackTestResults({ data }) {
         <h3 className="text-lg font-medium mb-2 text-purple-400">
           Performance Metrics
         </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {Object.entries(metrics).map(([key, value]) => (
             <div
               key={key}
@@ -122,10 +126,34 @@ function BackTestResults({ data }) {
                 {key.replaceAll("_", " ")}
               </h4>
               <p className="text-xl font-semibold mt-1 text-white">
-                {typeof value === "number" ? value.toFixed(2) : value}
+                {typeof value === "number"
+                  ? `${value.toFixed(2)}${
+                      [
+                        "total_return",
+                        "capital_return",
+                        "win_rate",
+                        "max_drawdown",
+                      ].includes(key.toLowerCase().replaceAll(" ", "_"))
+                        ? "%"
+                        : ""
+                    }`
+                  : value}
               </p>
             </div>
           ))}
+
+          {spy_delta_return !== null && (
+            <div className="bg-gray-800 rounded p-4 shadow text-center border border-gray-700">
+              <h4 className="text-sm text-purple-300">vs. SPY</h4>
+              <p
+                className={`text-xl font-semibold mt-1 ${
+                  spy_delta_return > 0 ? "text-green-400" : "text-red-400"
+                }`}
+              >
+                {spy_delta_return.toFixed(2)}%
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
